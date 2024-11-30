@@ -2,17 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Draw and Predict</title>
+    <title>Chinese Digit Classifier</title>
     <style>
       body {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         height: 100vh;
         margin: 0;
         background-color: #fff;
         color: #000;
+        padding: 20px; /* Added padding to give space around the content */
+      }
+      .content-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 20px;
+      }
+      .left-column {
+        flex: 1;
+        margin-right: 20px; /* Space between the two columns */
+      }
+      .right-column {
+        width: 40%; /* Ensure the table doesn't stretch too wide */
+        padding-left: 20px; /* Space between table and border */
+      }
+      table {
+        margin-top: 20px;
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid black;
+      }
+      th {
+        background-color: #f2f2f2;
       }
       canvas {
         border: 1px solid black;
@@ -27,27 +59,144 @@
         margin-top: 20px;
         display: none;
       }
-      .prediction-info {
-        margin-top: 20px;
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      .team-info {
+        text-align: center;
+        font-size: 16px;
+        margin-top: 10px;
+        color: #555;
+      }
+      .description {
         font-size: 18px;
-        font-weight: bold;
+        color: #666;
+        text-align: center;
+        margin-top: 10px;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <h1>Draw a Digit</h1>
-    <div class="prediction-info" id="prediction-info">
-      <!-- Prediction label, Chinese character, and English meaning will appear here -->
+    <h1>ECS171-Final-Project: Chinese Digit Classifier</h1>
+    <div class="team-info">
+      <p>
+        Team Members: Yiming Feng, Rithika Krishna Perugupalli, Brian Li, Angela
+        Zhou, Stephanie Hsia
+      </p>
     </div>
-    <canvas id="canvas" width="280" height="280"></canvas>
-    <div class="controls">
-      <button onclick="clearCanvas()">Clear</button>
-      <button onclick="predict()">Predict</button>
+    <div class="description">
+      <p>
+        <a href="https://github.com/quiet98k/Chinese-Digit-Classifier"
+          >Github Page</a
+        >
+      </p>
     </div>
-    <p id="result"></p>
-    <div id="chart-container">
-      <canvas id="confidence-chart"></canvas>
+
+    <div class="content-container">
+      <!-- Left Column (Canvas and Controls) -->
+      <div class="left-column">
+        <h2>Draw a Chinese Digit below</h2>
+        <canvas id="canvas" width="280" height="280"></canvas>
+        <div class="controls">
+          <button onclick="clearCanvas()">Clear</button>
+          <button onclick="predict()">Predict</button>
+        </div>
+        <p id="result"></p>
+        <div id="chart-container">
+          <canvas id="confidence-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Right Column (Table) -->
+      <div class="right-column">
+        <table>
+          <thead>
+            <tr>
+              <th>Chinese Digit</th>
+              <th>Label</th>
+              <th>English Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>零</td>
+              <td>0</td>
+              <td>Zero</td>
+            </tr>
+            <tr>
+              <td>一</td>
+              <td>1</td>
+              <td>One</td>
+            </tr>
+            <tr>
+              <td>二</td>
+              <td>2</td>
+              <td>Two</td>
+            </tr>
+            <tr>
+              <td>三</td>
+              <td>3</td>
+              <td>Three</td>
+            </tr>
+            <tr>
+              <td>四</td>
+              <td>4</td>
+              <td>Four</td>
+            </tr>
+            <tr>
+              <td>五</td>
+              <td>5</td>
+              <td>Five</td>
+            </tr>
+            <tr>
+              <td>六</td>
+              <td>6</td>
+              <td>Six</td>
+            </tr>
+            <tr>
+              <td>七</td>
+              <td>7</td>
+              <td>Seven</td>
+            </tr>
+            <tr>
+              <td>八</td>
+              <td>8</td>
+              <td>Eight</td>
+            </tr>
+            <tr>
+              <td>九</td>
+              <td>9</td>
+              <td>Nine</td>
+            </tr>
+            <tr>
+              <td>十</td>
+              <td>10</td>
+              <td>Ten</td>
+            </tr>
+            <tr>
+              <td>百</td>
+              <td>11</td>
+              <td>Hundred</td>
+            </tr>
+            <tr>
+              <td>千</td>
+              <td>12</td>
+              <td>Thousand</td>
+            </tr>
+            <tr>
+              <td>万</td>
+              <td>13</td>
+              <td>Ten Thousand</td>
+            </tr>
+            <tr>
+              <td>亿</td>
+              <td>14</td>
+              <td>Hundred Million</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <script>
@@ -55,14 +204,13 @@
       const ctx = canvas.getContext("2d");
       let drawing = false;
 
-      // Set the initial canvas background to black
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       canvas.addEventListener("mousedown", () => (drawing = true));
       canvas.addEventListener("mouseup", () => {
         drawing = false;
-        ctx.beginPath(); // Reset the path after each stroke
+        ctx.beginPath();
       });
       canvas.addEventListener("mousemove", draw);
 
@@ -70,7 +218,7 @@
         if (!drawing) return;
         ctx.lineWidth = 10;
         ctx.lineCap = "round";
-        ctx.strokeStyle = "white"; // Set pen color to white
+        ctx.strokeStyle = "white";
         ctx.lineTo(
           event.clientX - canvas.offsetLeft,
           event.clientY - canvas.offsetTop
@@ -85,12 +233,17 @@
 
       function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "black"; // Set fill color to black
-        ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with black
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
-        document.getElementById("result").innerText = ""; // Clear the result text
-        document.getElementById("chart-container").style.display = "none"; // Hide the chart
-        document.getElementById("prediction-info").innerHTML = ""; // Clear the prediction info
+        document.getElementById("result").innerText = "";
+
+        // Reset and hide the chart
+        const chartContainer = document.getElementById("chart-container");
+        chartContainer.style.display = "none"; // Hide chart after clearing canvas
+        if (window.chart) {
+          window.chart.destroy(); // Destroy previous chart instance
+        }
       }
 
       function predict() {
@@ -125,34 +278,11 @@
             ];
             const chineseCharacter = chineseDigits[prediction];
 
-            const englishMeaning = [
-              "Zero",
-              "One",
-              "Two",
-              "Three",
-              "Four",
-              "Five",
-              "Six",
-              "Seven",
-              "Eight",
-              "Nine",
-              "Ten",
-              "Hundred",
-              "Thousand",
-              "Ten Thousand",
-              "Hundred Million",
-            ];
+            document.getElementById(
+              "result"
+            ).innerText = `Prediction Label: ${prediction}  \n Prediction Character: ${chineseCharacter}`;
 
-            const meaning = englishMeaning[prediction];
-
-            // Display prediction, Chinese character, and English meaning at the top
-            document.getElementById("prediction-info").innerHTML = `
-              <p>Prediction Label: ${prediction}</p>
-              <p>Chinese Character: ${chineseCharacter}</p>
-              <p>English Meaning: ${meaning}</p>
-            `;
-
-            // Create the confidence chart
+            // Reinitialize the chart if necessary
             const ctx = document
               .getElementById("confidence-chart")
               .getContext("2d");
@@ -163,7 +293,7 @@
                 {
                   label: "Confidence",
                   data: data.confidences,
-                  backgroundColor: "rgba(255, 255, 255, 0.6)", // Semi-transparent white for bars
+                  backgroundColor: "rgba(255, 255, 255, 0.6)",
                   borderColor: "rgba(75, 192, 192, 1)",
                   borderWidth: 1,
                 },
@@ -177,32 +307,32 @@
                   y: {
                     beginAtZero: true,
                     grid: {
-                      color: "rgba(255, 255, 255, 0.2)", // Subtle white grid lines
+                      color: "rgba(255, 255, 255, 0.2)",
                     },
                     ticks: {
-                      color: "black", // White Y-axis ticks
+                      color: "black",
                     },
                   },
                   x: {
                     ticks: {
-                      color: "black", // White X-axis ticks
+                      color: "black",
                     },
                   },
                 },
                 plugins: {
                   legend: {
                     labels: {
-                      color: "black", // Ensure legend text color is black
+                      color: "black",
                     },
                   },
                 },
                 elements: {
                   title: {
                     display: true,
-                    text: "Confidence Chart", // Chart title
-                    color: "black", // Set title text color to black
+                    text: "Confidence Chart",
+                    color: "black",
                     font: {
-                      size: 16, // Set title font size
+                      size: 16,
                     },
                   },
                 },
@@ -213,7 +343,7 @@
                     const ctx = chart.canvas.getContext("2d");
                     ctx.save();
                     ctx.globalCompositeOperation = "destination-over";
-                    ctx.fillStyle = "white"; // Set chart background to white
+                    ctx.fillStyle = "white";
                     ctx.fillRect(0, 0, chart.width, chart.height);
                     ctx.restore();
                   },
@@ -221,16 +351,20 @@
               ],
             };
 
-            // Destroy existing chart if it exists and create a new one
-            if (window.myChart) {
-              window.myChart.destroy(); // Destroy the existing chart if it exists
+            // Destroy the old chart instance if it exists
+            if (window.chart) {
+              window.chart.destroy();
             }
-            window.myChart = new Chart(ctx, config);
 
-            // Show the chart container
+            // Create a new chart instance
+            window.chart = new Chart(ctx, config);
+
+            // Show the chart
             document.getElementById("chart-container").style.display = "block";
-          });
+          })
+          .catch((error) => console.error("Error:", error));
       }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </body>
 </html>
