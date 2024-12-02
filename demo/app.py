@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # Load the model
 model = VGG16()
-model.load_state_dict(torch.load('../vgg_16_model.pth', map_location=torch.device('cpu')))
+model.load_state_dict(torch.load('./models/vgg_16_model.pth', map_location=torch.device('cpu')))
 model.eval()
 
 # Define the image transformation without normalization
@@ -82,4 +82,4 @@ def predict():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=3788)

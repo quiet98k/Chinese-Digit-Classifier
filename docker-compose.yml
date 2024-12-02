@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./demo/Dockerfile
+    ports:
+      - "3788:3788"
+    environment:
+      - FLASK_ENV=development
+    labels:
+      - "name=chinese_digit_classifier"
+    restart: always
