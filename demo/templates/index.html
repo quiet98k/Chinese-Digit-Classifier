@@ -13,7 +13,7 @@
         margin: 0;
         background-color: #fff;
         color: #000;
-        padding: 20px; /* Added padding to give space around the content */
+        padding: 20px;
       }
       .content-container {
         display: flex;
@@ -25,11 +25,11 @@
       }
       .left-column {
         flex: 1;
-        margin-right: 20px; /* Space between the two columns */
+        margin-right: 20px;
       }
       .right-column {
-        width: 40%; /* Ensure the table doesn't stretch too wide */
-        padding-left: 20px; /* Space between table and border */
+        width: 40%;
+        padding-left: 20px;
       }
       table {
         margin-top: 20px;
@@ -207,29 +207,43 @@
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      canvas.addEventListener("mousedown", () => (drawing = true));
-      canvas.addEventListener("mouseup", () => {
-        drawing = false;
-        ctx.beginPath();
-      });
-      canvas.addEventListener("mousemove", draw);
+      // Helper function to get correct position
+      function getCanvasPosition(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX || event.touches[0].clientX;
+        const y = event.clientY || event.touches[0].clientY;
+        return {
+          x: x - rect.left,
+          y: y - rect.top,
+        };
+      }
 
-      function draw(event) {
+      canvas.addEventListener("pointerdown", (event) => {
+        drawing = true;
+        const { x, y } = getCanvasPosition(event);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
         if (!drawing) return;
+        const { x, y } = getCanvasPosition(event);
         ctx.lineWidth = 10;
         ctx.lineCap = "round";
         ctx.strokeStyle = "white";
-        ctx.lineTo(
-          event.clientX - canvas.offsetLeft,
-          event.clientY - canvas.offsetTop
-        );
+        ctx.lineTo(x, y);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(
-          event.clientX - canvas.offsetLeft,
-          event.clientY - canvas.offsetTop
-        );
-      }
+      });
+
+      canvas.addEventListener("pointerup", () => {
+        drawing = false;
+        ctx.closePath();
+      });
+
+      canvas.addEventListener("pointerout", () => {
+        drawing = false;
+        ctx.closePath();
+      });
 
       function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -238,11 +252,10 @@
         ctx.beginPath();
         document.getElementById("result").innerText = "";
 
-        // Reset and hide the chart
         const chartContainer = document.getElementById("chart-container");
-        chartContainer.style.display = "none"; // Hide chart after clearing canvas
+        chartContainer.style.display = "none";
         if (window.chart) {
-          window.chart.destroy(); // Destroy previous chart instance
+          window.chart.destroy();
         }
       }
 
@@ -282,7 +295,6 @@
               "result"
             ).innerText = `Prediction Label: ${prediction}  \n Prediction Character: ${chineseCharacter}`;
 
-            // Reinitialize the chart if necessary
             const ctx = document
               .getElementById("confidence-chart")
               .getContext("2d");
@@ -304,62 +316,15 @@
               data: chartData,
               options: {
                 scales: {
-                  y: {
-                    beginAtZero: true,
-                    grid: {
-                      color: "rgba(255, 255, 255, 0.2)",
-                    },
-                    ticks: {
-                      color: "black",
-                    },
-                  },
-                  x: {
-                    ticks: {
-                      color: "black",
-                    },
-                  },
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: "black",
-                    },
-                  },
-                },
-                elements: {
-                  title: {
-                    display: true,
-                    text: "Confidence Chart",
-                    color: "black",
-                    font: {
-                      size: 16,
-                    },
-                  },
+                  y: { beginAtZero: true },
                 },
               },
-              plugins: [
-                {
-                  beforeDraw: (chart) => {
-                    const ctx = chart.canvas.getContext("2d");
-                    ctx.save();
-                    ctx.globalCompositeOperation = "destination-over";
-                    ctx.fillStyle = "white";
-                    ctx.fillRect(0, 0, chart.width, chart.height);
-                    ctx.restore();
-                  },
-                },
-              ],
             };
 
-            // Destroy the old chart instance if it exists
             if (window.chart) {
               window.chart.destroy();
             }
-
-            // Create a new chart instance
             window.chart = new Chart(ctx, config);
-
-            // Show the chart
             document.getElementById("chart-container").style.display = "block";
           })
           .catch((error) => console.error("Error:", error));
